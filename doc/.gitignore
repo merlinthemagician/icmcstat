@@ -1,0 +1,9 @@
+# ignore all TeX-related stuff
+*.aux
+*.log
+*.rel
+*.bbl
+*.out
+*.synctex.gz
+*.blg
+*.tex
