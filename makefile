@@ -14,7 +14,7 @@ _:		;@ echo -------------------- $D --------------------
 
 D =	Statistical analysis of mode changes
 
-T = mp_parameter.o mp_mcmc.o likelihood.o bernoulliDist.o mp_proposal.o icmcstat$x cp_proposal.o cp_likelihood.o cp_prior.o
+T = mp_parameter.o mp_mcmc.o likelihood.o bernoulliDist.o mp_proposal.o icmcstat$x cp_proposal.o cp_likelihood.o cp_prior.o generateTestCurrents$x icmcstatGEO$x icmcstatNEGBINK1$x icmcstatNEGBINK2$x icmcstatNJgeoNEGBINK1$x icmcstatNJgeoNEGBINK2$x
 
 all:	$T
 
@@ -48,10 +48,28 @@ cp_proposal.o:	cp_proposal.c
 		$(CC) $(CFLAGS) -c -o $@ cp_proposal.c -I$(INCLUDE) $(GSLINC) -I$(INC2)
 
 icmcstat$x:	$(MCMC) $(BER) icmcstat.c
-			$(CC) $(CFLAGS) -o $@ $(MCMC) $(BER) icmcstat.c -I$(INCLUDE) $(GSLINC) $(GSL)
+		$(CC) $(CFLAGS) -DDEFAULT -o $@ $(MCMC) $(BER) icmcstat.c -I$(INCLUDE) $(GSLINC) $(GSL)
+
+icmcstatGEO$x:	$(MCMC) $(BER) icmcstat.c
+		$(CC) $(CFLAGS) -DGEO -o $@ $(MCMC) $(BER) icmcstat.c -I$(INCLUDE) $(GSLINC) $(GSL)
+
+icmcstatNEGBINK1$x:	$(MCMC) $(BER) icmcstat.c
+			$(CC) $(CFLAGS) -DNEGATIVEBINK1 -o $@ $(MCMC) $(BER) icmcstat.c -I$(INCLUDE) $(GSLINC) $(GSL)
+
+icmcstatNEGBINK2$x:	$(MCMC) $(BER) icmcstat.c
+			$(CC) $(CFLAGS) -DNEGATIVEBINK2 -o $@ $(MCMC) $(BER) icmcstat.c -I$(INCLUDE) $(GSLINC) $(GSL)
 
 cp_likelihood.o:	cp_likelihood.c
 			$(CC) $(CFLAGS) -c -o $@ cp_likelihood.c -I$(INCLUDE) $(GSLINC) -I$(INC2)
 
 cp_prior.o:	cp_prior.c
 		$(CC) $(CFLAGS) -c -o $@ cp_prior.c -I$(INCLUDE) $(GSLINC) -I$(INC2)
+
+generateTestCurrents$x:	generateTestCurrents.c
+			$(CC) $(CFLAGS) -o $@ generateTestCurrents.c -I$(INCLUDE) $(GSLINC) $(GSL)
+
+icmcstatNJgeoNEGBINK1$x:	$(MCMC) $(BER) icmcstat.c
+				$(CC) $(CFLAGS) -DNJGEONEGATIVEBINK1 -o $@ $(MCMC) $(BER) icmcstat.c -I$(INCLUDE) $(GSLINC) $(GSL)
+
+icmcstatNJgeoNEGBINK2$x:	$(MCMC) $(BER) icmcstat.c
+				$(CC) $(CFLAGS) -DNJGEONEGATIVEBINK2 -o $@ $(MCMC) $(BER) icmcstat.c -I$(INCLUDE) $(GSLINC) $(GSL)

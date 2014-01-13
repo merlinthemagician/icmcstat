@@ -30,7 +30,7 @@
 #define ERR stderr
 
 /* Number of change points */
-#define NCHANGE 99
+#define NCHANGE 250
 
 /* Bernoulli-distributed data with change point */
 static int *CDFdata=NULL/* , nCDFdata=1000 */;
@@ -98,7 +98,7 @@ void processData(char *dataFn) {
   traceData = malloc(nTr*sizeof(double));
   if(!traceData) fprintf(ERR, "Out of memory\n"), exit(1);
   nTrace = readDoubles(data_fp, traceData,nTr);
-  printf("Read %i lines...\n", nTrace);
+  printf("Read %li lines...\n", nTrace);
 
   CDFdata=malloc(nTrace*sizeof(int));
   double2CDF(CDFdata, traceData, threshold, nTrace);
@@ -182,18 +182,57 @@ void getArgs(int argc, char **argv) {
 
 int main(int argc, char **argv) {
   /* Initial number of changepoints */
-  int nK0=0;
+  int nK0=1;
 
   getArgs(argc, argv);
   processData(dataFn);
 
   initialise();
 
+#ifdef DEFAULT
   iterateRJ(prefix, prefix, prefix, prefix,
 	    sampleBirthDeath,
 	    dPriorChangepoints,dLikelihood,
 	    p0, nK0+1,1, nProb,
 	    ip0, nK0,1, nK, seed,  nIter);
+#endif
+
+#ifdef GEO
+  iterateRJ(prefix, prefix, prefix, prefix,
+	    sampleBirthDeath,
+	    dPriorChangepointsGeo,dLikelihood,
+	    p0, nK0+1,1, nProb,
+	    ip0, nK0,1, nK, seed,  nIter);
+#endif
+
+#ifdef NEGATIVEBINK1
+  iterateRJ(prefix, prefix, prefix, prefix,
+	    sampleBirthDeath,
+	    dPriorChangepointsNegativeBinK1,dLikelihood,
+	    p0, nK0+1,1, nProb,
+	    ip0, nK0,1, nK, seed,  nIter);
+#endif
+#ifdef NEGATIVEBINK2
+  iterateRJ(prefix, prefix, prefix, prefix,
+	    sampleBirthDeath,
+	    dPriorChangepointsNegativeBinK2,dLikelihood,
+	    p0, nK0+1,1, nProb,
+	    ip0, nK0,1, nK, seed,  nIter);
+#endif
+#ifdef NJGEONEGATIVEBINK1
+  iterateRJ(prefix, prefix, prefix, prefix,
+	    sampleBirthDeath,
+	    dPriorChangepoints_nJGeoNegativeBinK1,dLikelihood,
+	    p0, nK0+1,1, nProb,
+	    ip0, nK0,1, nK, seed,  nIter);
+#endif
+#ifdef NJGEONEGATIVEBINK2
+  iterateRJ(prefix, prefix, prefix, prefix,
+	    sampleBirthDeath,
+	    dPriorChangepoints_nJGeoNegativeBinK2,dLikelihood,
+	    p0, nK0+1,1, nProb,
+	    ip0, nK0,1, nK, seed,  nIter);
+#endif
 
   return 0;  
 }
