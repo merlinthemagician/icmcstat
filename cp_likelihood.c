@@ -115,3 +115,18 @@ double dLikelihood(const parameters *p,
 
   return propL-parL;
 }
+
+/* Calculates likelihood for given locations of changepoints and open
+   probabilities. */
+double dFixedLikelihood(const parameters *p, int nP,
+		       const intparameters *ip,int nIP,
+		       likelihood *L) {
+  double propL=propLikelihood(nIP,p,nP,ip,nIP);
+  double parL=parLikelihood(nIP,p,nP,ip,nIP);
+
+  /* Calculate likelihood of current changepoint configurations and
+     open probabilities, add scaling factor for proposal.*/
+  setPosterior(L,parL, propL);
+
+  return propL-parL;
+}

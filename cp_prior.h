@@ -110,4 +110,11 @@ double dPriorChangepoints_nJGeoNegativeBinK2(const parameters *p,
 				       const intparameters *ip, 
 				       int actIP, int propIP, int nIP, 
 					     likelihood *L);
+
+/* log-Prior for a fixed number of consecutive changepoints calculated
+   for current sample and proposal. The conjugate prior for the
+   probabilities is accounted for in the likelihood. */
+double dPriorFixedChangepoints(const parameters *p, int nP, 
+			  const intparameters *ip, int nIP, 
+			       likelihood *L);
 #endif

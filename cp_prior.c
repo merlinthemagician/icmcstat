@@ -191,6 +191,37 @@ double logNegativeBinomialPriorDiff(const intparameters *ip,
   return logProp-logPar;
 }
 
+/* log-Prior for a fixed number of consecutive changepoints calculated
+   for current sample and proposal. The conjugate prior for the
+   probabilities is accounted for in the likelihood. */
+double dPriorFixedChangepoints(const parameters *p, int nP, 
+			  const intparameters *ip, int nIP, 
+			  likelihood *L) {
+  int i;
+  double logPar=0, logProp=0;
+  int nData=getNdata();
+
+  /* Prior for LOCATION. See bottom of page 207 in (Fearnhead,
+     2006) */
+  for(i=0; i<=nIP; i++){
+    int k0=getCPpar(ip, i, nIP), k1=getCPpar(ip,i+1, nIP);
+    logPar+=(k1>k0)?log(k1-k0):0;
+  }
+
+  for(i=0; i<=nIP; i++){
+    int k0P=getCPprop(ip, i, nIP), k1P=getCPprop(ip, i+1, nIP);
+    logProp+=(k1P>k0P)?log(k1P-k0P):0;
+  }
+
+  /* 'Divide' by scaling factors */
+  logPar+=logPriorScale(nData, nIP);
+  logProp+=logPriorScale(nData, nIP);
+
+  setPrior(L, logPar, logProp);
+
+  return logProp-logPar;
+}
+
 /* Prior parameter for number of change points. lambda=3 is chosen for
    somewhat heuristic reasons by (Green, 1995). */
 static int lambda=3;

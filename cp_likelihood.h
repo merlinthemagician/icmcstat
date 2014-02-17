@@ -25,4 +25,10 @@ double dLikelihood(const parameters *p,
 		   int actIP, int propIP, int nIP, 
 		   likelihood *L);
 
+/* Calculates likelihood for given locations of changepoints and open
+   probabilities for a fixed number of changepoints. */
+double dFixedLikelihood(const parameters *p, int nP,
+		       const intparameters *ip,int nIP,
+			likelihood *L);
+
 #endif

@@ -158,7 +158,7 @@ void initialise() {
 */
 void getArgs(int argc, char **argv) {
   char* endptr;
-  const char* usage="bernoulliRJchange FILE ITERATIONS SEED [OUTPUTPREFIX]";
+  const char* usage="icmcstat FILE ITERATIONS SEED [OUTPUTPREFIX]";
 
   if(argc<4) fprintf(ERR, "%s\n", usage), exit(1);
   dataFn=argv[1];  
@@ -180,14 +180,88 @@ void getArgs(int argc, char **argv) {
   }
 }
 
+/* Process command line parameters:
+ argv[1]: Name of data file or '-' for stdin
+ argv[2]: Number of changepoints
+ argv[3]: Number of iterations
+ argv[4]: seed for random number generator
+ argv[5]: (optional) Prefix for output files
+*/
+void getFixedArgs(int argc, char **argv) {
+  char* endptr;
+  const char* usage="icmcstatFixed FILE NK ITERATIONS SEED [OUTPUTPREFIX]";
+
+  if(argc<5) fprintf(ERR, "%s\n", usage), exit(1);
+  dataFn=argv[1];  
+  printf("Reading data from ");
+
+  if(!strcmp(dataFn, "-")) printf("stdin\n");
+  else printf("%s\n", dataFn);
+
+  printf("%s nK\n", argv[2]);
+  nK = strtol(argv[2], &endptr, 10);
+  nProb=nK+1;
+
+  printf("%s iterations\n", argv[3]);
+  nIter = strtol(argv[3], &endptr, 10);
+
+  seed = strtol(argv[4], &endptr, 10);
+  printf("Seed for random number generator: %i\n", seed);
+
+  /* Optional parameter*/
+  if(argc==6) {
+    prefix=argv[5];
+    printf("Prefix prepended to output files: %s\n", prefix); 
+  }
+}
+
+/* Dynamically allocates room for s plus additional n characters */
+static char *strnsave(const char * s, size_t n) {
+  char *p = malloc(strlen(s) + n + 1);
+  if(!p) fputs("strsave: out of memory\n", ERR), exit(1);
+
+  return strcpy(p, s);
+}
+
+/* Adds prefix to s */
+static char* addPrefix(const char *s, const char *prefix) {
+  char *out = strnsave(prefix, strlen(s));
+
+  return  strcat(out, s);
+}
+
 int main(int argc, char **argv) {
   /* Initial number of changepoints */
   int nK0=1;
+#ifdef FIXED
+  FILE *pfp, *kfp, *Lfp;
+  char *pfn="Probs.dat", *kfn="K.dat", *Lfn="Likelihood.dat";
+  prefix=NULL;
+#endif
 
+#ifndef FIXED
   getArgs(argc, argv);
+#else
+  getFixedArgs(argc, argv);
+#endif
   processData(dataFn);
 
   initialise();
+
+#ifdef FIXED
+  if(prefix) {
+    pfn=addPrefix(pfn, prefix);
+    kfn=addPrefix(kfn, prefix);
+    Lfn=addPrefix(Lfn, prefix);
+  }
+  pfp=fopen(pfn,"w");
+  kfp=fopen(kfn,"w");
+  Lfp=fopen(Lfn,"w");
+
+  setData(CDFdata, getNdata());
+  setSample(sampleMixed);
+  iterate(pfp, kfp, Lfp, /* dPriorNew */dPriorFixedChangepoints, dFixedLikelihood,p0,nProb, ip0, nK, seed, nIter);
+#endif
 
 #ifdef DEFAULT
   iterateRJ(prefix, prefix, prefix, prefix,
