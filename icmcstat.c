@@ -42,6 +42,18 @@ static int * k;/* [NCHANGE+1]; */
 static int * kProp;/* [NCHANGE+1]; */
 
 /* Reads a list of doubles. */
+long readInts(FILE *fp, int *v, int buf) {
+  int k=0;
+  char c;
+  while ((c = fgetc(fp)) != EOF) {
+    /* Ignore everything that is neither 0 nor 1 */
+    if( c=='0')  v[k++]=0;
+    else if (c=='1')  v[k++]=1;
+  }
+  return k;
+}
+
+/* Reads a list of doubles. */
 long readDoubles(FILE *fp, double *v, int buf) {
   long k=0;
   double d;
@@ -102,6 +114,36 @@ void processData(char *dataFn) {
 
   CDFdata=malloc(nTrace*sizeof(int));
   double2CDF(CDFdata, traceData, threshold, nTrace);
+
+  fprintf(OUT, "Generating CDF:\n");
+  setData(CDFdata, nTrace);
+  fprintf(OUT, "done.\n");
+  free(traceData);
+
+  /* If data file is not stdin, close file. */
+  if(strcmp(dataFn, "-")!=0) fclose(data_fp);
+}
+
+/* Read current data from dataFn, threshold currents and generate
+   counts of open events. */
+void processIntData(char *dataFn) {
+  long nTr=60000*25;
+  int * traceData=malloc(nTr*sizeof(double));
+  long nTrace;
+  FILE *data_fp=stdin;
+
+  /* If data file is not stdin, open file. */
+  if(strcmp(dataFn, "-")!=0) data_fp=fopen(dataFn,"r");
+
+  /* Read and process input data */
+  fprintf(OUT, "Processing data...\n");
+  traceData = malloc(nTr*sizeof(*traceData));
+  if(!traceData) fprintf(ERR, "Out of memory\n"), exit(1);
+  nTrace = readInts(data_fp, traceData,nTr);
+  printf("Read %li characters...\n", nTrace);
+
+  CDFdata=malloc(nTrace*sizeof(int));
+  bernoulliCDF(CDFdata, traceData, nTrace);
 
   fprintf(OUT, "Generating CDF:\n");
   setData(CDFdata, nTrace);
@@ -241,10 +283,12 @@ int main(int argc, char **argv) {
 
 #ifndef FIXED
   getArgs(argc, argv);
-#else
-  getFixedArgs(argc, argv);
-#endif
   processData(dataFn);
+#else
+  /* FIXED now assumes that a text file with zeroes and ones is provided */
+  getFixedArgs(argc, argv);
+  processIntData(dataFn);
+#endif
 
   initialise();
 
