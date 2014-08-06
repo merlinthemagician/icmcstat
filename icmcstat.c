@@ -127,7 +127,7 @@ void processData(char *dataFn) {
 /* Read current data from dataFn, threshold currents and generate
    counts of open events. */
 void processIntData(char *dataFn) {
-  long nTr=60000*25;
+  long nTr=60000*100;
   int * traceData=malloc(nTr*sizeof(double));
   long nTrace;
   FILE *data_fp=stdin;
@@ -283,11 +283,15 @@ int main(int argc, char **argv) {
 
 #ifndef FIXED
   getArgs(argc, argv);
-  processData(dataFn);
 #else
   /* FIXED now assumes that a text file with zeroes and ones is provided */
   getFixedArgs(argc, argv);
+#endif
+
+#ifdef BIN
   processIntData(dataFn);
+#else
+  processData(dataFn);
 #endif
 
   initialise();
