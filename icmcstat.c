@@ -356,6 +356,9 @@ int main(int argc, char **argv) {
 	    ip0, nK0,1, nK, seed,  nIter);
 #endif
 
+  /* Nonsense code just to cause a compile error */
+  blablabla();
+
   return 0;  
 }
  
