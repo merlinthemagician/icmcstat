@@ -357,7 +357,7 @@ int main(int argc, char **argv) {
 #endif
 
   /* Nonsense code just to cause a compile error */
-  blabla();
+  blablabla();
 
   return 0;  
 }
