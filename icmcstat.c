@@ -42,13 +42,13 @@ static int * k;/* [NCHANGE+1]; */
 static int * kProp;/* [NCHANGE+1]; */
 
 /* Reads a list of doubles. */
-long readInts(FILE *fp, int *v, int buf) {
+long readInts(FILE *fp, int *v) {
   int k=0;
-  char c;
+  int c;
   while ((c = fgetc(fp)) != EOF) {
     /* Ignore everything that is neither 0 nor 1 */
     if( c=='0')  v[k++]=0;
-    else if (c=='1')  v[k++]=1;
+    else if (c=='1')  {v[k++]=1; fprintf(ERR, "%i\n", k);}
   }
   return k;
 }
@@ -98,7 +98,7 @@ static intparameters *ip0/* [NCHANGE] */;
    counts of open events. */
 void processData(char *dataFn) {
   long nTr=60000*25;
-  double * traceData=malloc(nTr*sizeof(double));
+  double * traceData/* =malloc(nTr*sizeof(double)) */;
   long nTrace;
   FILE *data_fp=stdin;
 
@@ -127,8 +127,8 @@ void processData(char *dataFn) {
 /* Read current data from dataFn, threshold currents and generate
    counts of open events. */
 void processIntData(char *dataFn) {
-  long nTr=60000*25;
-  int * traceData=malloc(nTr*sizeof(double));
+  long nTr=60000*100;
+  int * traceData/* =malloc(nTr*sizeof(double)) */;
   long nTrace;
   FILE *data_fp=stdin;
 
@@ -139,7 +139,7 @@ void processIntData(char *dataFn) {
   fprintf(OUT, "Processing data...\n");
   traceData = malloc(nTr*sizeof(*traceData));
   if(!traceData) fprintf(ERR, "Out of memory\n"), exit(1);
-  nTrace = readInts(data_fp, traceData,nTr);
+  nTrace = readInts(data_fp, traceData);
   printf("Read %li characters...\n", nTrace);
 
   CDFdata=malloc(nTrace*sizeof(int));
@@ -283,11 +283,15 @@ int main(int argc, char **argv) {
 
 #ifndef FIXED
   getArgs(argc, argv);
-  processData(dataFn);
 #else
   /* FIXED now assumes that a text file with zeroes and ones is provided */
   getFixedArgs(argc, argv);
+#endif
+
+#ifdef BIN
   processIntData(dataFn);
+#else
+  processData(dataFn);
 #endif
 
   initialise();

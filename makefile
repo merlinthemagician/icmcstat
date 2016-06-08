@@ -14,7 +14,7 @@ _:		;@ echo -------------------- $D --------------------
 
 D =	Statistical analysis of mode changes
 
-T = mp_parameter.o mp_mcmc.o likelihood.o bernoulliDist.o mp_proposal.o icmcstat$x cp_proposal.o cp_likelihood.o cp_prior.o generateTestCurrents$x icmcstatGEO$x icmcstatNEGBINK1$x icmcstatNEGBINK2$x icmcstatNJgeoNEGBINK1$x icmcstatNJgeoNEGBINK2$x icmcstatFixed$x
+T = mp_parameter.o mp_mcmc.o likelihood.o bernoulliDist.o mp_proposal.o icmcstat$x cp_proposal.o cp_likelihood.o cp_prior.o generateTestCurrents$x icmcstatGEO$x icmcstatNEGBINK1$x icmcstatNEGBINK2$x icmcstatNJgeoNEGBINK1$x icmcstatNJgeoNEGBINK2$x icmcstatFixed$x icmcstatBin$x dat2SNPindex$x
 
 all:	$T
 
@@ -49,6 +49,9 @@ cp_proposal.o:	cp_proposal.c
 
 icmcstat$x:	$(MCMC) $(BER) icmcstat.c
 		$(CC) $(CFLAGS) -DDEFAULT -o $@ $(MCMC) $(BER) icmcstat.c -I$(INCLUDE) $(GSLINC) $(GSL)
+
+icmcstatBin$x:	$(MCMC) $(BER) icmcstat.c
+		$(CC) $(CFLAGS) -DDEFAULT -DBIN -o $@ $(MCMC) $(BER) icmcstat.c -I$(INCLUDE) $(GSLINC) $(GSL)
 
 icmcstatGEO$x:	$(MCMC) $(BER) icmcstat.c
 		$(CC) $(CFLAGS) -DGEO -o $@ $(MCMC) $(BER) icmcstat.c -I$(INCLUDE) $(GSLINC) $(GSL)
