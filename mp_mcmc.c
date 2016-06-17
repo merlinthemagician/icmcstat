@@ -801,7 +801,7 @@ void iterateRJ(char *k_prefix,
     /* fprintf(OUT, "Step %i, actP=%i, propP=%i\n", i, actP, propP); */
     const int printDot=/* ((i*80)/nIter); */nIter/75;
     
-    if(i%printDot==0) fprintf(OUT, "."), fflush(OUT);
+    /* if(i%printDot==0) fprintf(OUT, "."), fflush(OUT); */
 
     /* Next step */
     sample(r, p, actP, &propP, nP0, ip, actIP, &propIP,  nIP0);
