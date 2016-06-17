@@ -25,6 +25,10 @@ double getAlpha();
 /* Conjugate prior for open probabilities: Get hyperparameter beta */
 double getBeta();
 
+void setAlpha(double a);
+
+void setBeta(double b);
+
 /* log-Prior for consecutive changepoints calculated for current
    sample and proposal. Priors for the NUMBER of changepoints and the
    changepoint LOCATIONS are added. The conjugate prior for the

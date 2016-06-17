@@ -36,6 +36,14 @@ double getBeta() {
   return beta;
 }
 
+void setAlpha(double a) {
+  alpha=a;
+}
+
+void setBeta(double b) {
+  beta=b;
+}
+
 /* PRIOR */
 /* returns changepoint m-1 or 0 or length of dataset. */
 int getCPpar(const intparameters *ip, int m, int nIP) {
