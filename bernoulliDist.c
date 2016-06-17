@@ -65,10 +65,11 @@ void bernoulliCDF(int *cdf, const int *dist, int n) {
 void double2CDF(int *cdf, const double *data, 
 		double threshold, int n) {
   int i;
-  cdf[0]=data[0]<threshold?1:0;
+  cdf[0]=(fabs(data[0])>fabs(threshold))?1:0;
   for(i=1; i<n; i++) {
-    cdf[i]=cdf[i-1]+(data[i]<threshold?1:0);
+    cdf[i]=cdf[i-1]+((fabs(data[i])>fabs(threshold))?1:0);
   }
+  fprintf(OUT, "double2CDF(): pO=%g\n", (double)cdf[n-1]/n);
 }
 
 /* Analytical solution for change point for given CDF and change point
