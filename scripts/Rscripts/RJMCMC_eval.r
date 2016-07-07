@@ -137,6 +137,19 @@ reduceReport=function(df) {
     results
 }
 
+## Generate a vector of unique IDs for the runs in vector v
+rleUniqueID=function(v) {
+    r <- rle(v)
+    r$values <- paste0(r$values, sprintf("_%03d", seq_along(r$values)))
+    inverse.rle(r)
+}
+
+## Aggregate data according to runs in vector v using function FUN
+## aggregateRuns=function(name,d,v,f=sum) {
+##     r <- rleUniqueID(v)
+##     aggregate(d[name] ~ r,data=d,FUN=f)
+## }
+
 ## nK2Hist=function(nK) {
 ##     nK=
 ## }
