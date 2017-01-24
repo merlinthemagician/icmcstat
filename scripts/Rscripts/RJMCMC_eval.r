@@ -34,6 +34,22 @@ aggregateData=function (x,counts) {
     )
 }
 
+## Collapses what is obtained from aggregateData in one list
+collapseAggregateData=function(aggdf) {
+    do.call(rbind,aggdf[2:length(aggdf)])
+}
+
+## Aggregate data frame: 'Forget' changepoint indices -> Frequencies of locations
+locFreq=function(df) {
+    aggregate(df[, "x"], by=list(df[,"Group.1"]), FUN=function(x) sum(x))
+}
+
+## data.frame(t(sapply(unique(ip201All$Group.1), function(x) list(x,sum(ip201All$x[ip201All$Group.1 == x])))))
+
+## aggregate(ip201All, by=list(ip201All$Group.1), FUN=function(x) sum(x))
+## aggregate(ip201All[,"x"], by=list(ip201All[,"Group.1"]), FUN=function(x) sum(x))
+
+
 ## Calculates MLE for data x and weights w. Here, x must not contain
 ## multiple elements! x and w must have the same lengths
 wtd.mle=function(x,w) {
@@ -43,6 +59,31 @@ wtd.mle=function(x,w) {
 ## Conditionally selects from y elements for which x==MLE
 conditionOnMLE=function(y,x,mle) {
     y[x==mle]
+}
+
+## Process RJMCMC results: k, p as read from files, nK should have
+## counts added with addCounts
+binK=function(k, nK) {
+    ## Remove burn-in
+    burnIn=nK$Iterations[1]
+    k=k[ k$Iterations >= burnIn, ]
+    k$Iterations=NULL
+    myNK=ncol(k)
+    counts=nK$counts[nK$n_K==myNK]
+    aggregateData(k,counts)
+}
+
+k2locFreq=function(k, nK) {
+    k=binK(k, nK)
+    k=collapseAggregateData(k)
+    locFreq(k)
+}
+
+## Transforms lists of changepoints to 
+kLists2locFreq=function(kList, nK) {
+    locFreqList=lapply(kList, function (k) k2locFreq(k, nK) )
+    locFreqs=do.call(rbind, locFreqList)
+    locFreq(locFreqs)
 }
 
 ## Process RJMCMC results: k, p as read from files, nK should have
