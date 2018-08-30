@@ -1,4 +1,4 @@
-library(weights)
+##library(weights)
 library(R.utils)
 
 dischist= function (x) {
@@ -176,6 +176,24 @@ reduceReport=function(df) {
     ## }
     results$diffs=diffs
     results
+}
+
+reduceReportNew <- function(df) {
+    ## Get run length encoding
+    rleModes <- rle(as.character(df$mode))
+    ## Generate constant IDs for each run
+    rleIDs <- rep(1:length(rleModes$lengths), rleModes$lengths)
+
+    ## Assign zero probability to mode 1 and 0.75 to mode 2
+    p <- ifelse(rleModes$values == "M1", 0.0, 0.75)
+
+    ## Choose first index k from each run
+    k <- tapply(df$kMLE, rleIDs, FUN=function(x) head(x,1))
+
+    ## Sum differences for runs
+    diffAgg <- tapply(df$diff, rleIDs, FUN=sum)
+
+    data.frame(pMLE_k=p, diff=diffAgg, kMLE=k, mode=rleModes$values)
 }
 
 ## Generate a vector of unique IDs for the runs in vector v
