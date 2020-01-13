@@ -1,4 +1,4 @@
-##library(weights)
+library(weights)
 library(R.utils)
 
 dischist= function (x) {
@@ -98,12 +98,27 @@ rjmcmcReport=function(k,p,nK) {
     p$Iterations=NULL
     kBinned=aggregateData(k,counts)
     results=data.frame(kMLE=sapply(kBinned,function(col) wtd.mle(col[,1],col[,2])))
-    ##    pMLE=lapply(seq(1:length(results$kMLE)),
+    ## Condition on MLE for k: For those p_(i+1) that are sampled
+    ## together with k_i find the one that occurs most frequently
     pMLE=sapply(seq(1:(length(results$kMLE))),
         function(i) which.max(table(conditionOnMLE(p[[i+1]],k[[i]],results$kMLE[i]))))
-##        function(i) which.max(table(conditionOnMLE(p[[i]],k[[i]],results$kMLE[i]))))
-    ## as.numeric(names(pMLE))
+    ##        function(i) which.max(table(conditionOnMLE(p[[i]],k[[i]],results$kMLE[i]))))
+    
     results$pMLE_K=as.numeric(names(pMLE))
+
+    ## Still missing: Segment before first changepoint. This will be
+    ## added above the already calculated results data frame
+    pMLE0 <- which.max(
+        table( conditionOnMLE(p[[1]], k[[1]], results$kMLE[[1]] )
+              )
+    )
+    
+    pMLE0_K <- as.numeric(names(pMLE0))
+
+    results <- rbind(data.frame(kMLE=0, pMLE_K=pMLE0_K),
+                     results
+                     )
+
     results$mode=factor(x=results$pMLE_K<0.35,c(TRUE,FALSE),labels=c("M1","M2"))
 
     ## Differences
