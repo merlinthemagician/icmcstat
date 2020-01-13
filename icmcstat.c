@@ -100,6 +100,20 @@ long readDoubles(FILE *fp, double *v, int buf) {
   return k;
 }
 
+/* Reads a list of ints. */
+long readInts(FILE *fp, int *v, int buf) {
+  long k=0;
+  int i;
+  char buff[20];
+  while( (k<buf) && (fgets( buff, 20, fp ))) {
+    /* If buff has more than just \n */
+    if((strlen(buff)>1) && (sscanf(buff,"%i", &i)))
+      v[k++]=i;
+  }
+  return k;
+}
+
+
 /*Number of changepoints and probabilities */
 static int nProb=NCHANGE+1, nK=NCHANGE;
 
@@ -140,6 +154,7 @@ static intparameters *ip0/* [NCHANGE] */;
 void processData(char *dataFn) {
   long nTr=60000*25;
   double * traceData=malloc(nTr*sizeof(double));
+  int *intData=malloc(nTr*sizeof(int));
   long nTrace;
   FILE *data_fp=stdin;
 
@@ -148,6 +163,8 @@ void processData(char *dataFn) {
 
   /* Read and process input data */
   fprintf(OUT, "Processing data...\n");
+
+  #ifndef BERNOULLIDATA
   traceData = malloc(nTr*sizeof(double));
   if(!traceData) fprintf(ERR, "Out of memory\n"), exit(1);
   nTrace = readDoubles(data_fp, traceData,nTr);
@@ -157,9 +174,20 @@ void processData(char *dataFn) {
   double2CDF(CDFdata, traceData, threshold, nTrace);
 
   fprintf(OUT, "Generating CDF:\n");
+  free(traceData);
+#else
+  nTrace = readInts(data_fp, intData,nTr);
+  printf("Read %i lines...\n", nTrace);
+
+  CDFdata=malloc(nTrace*sizeof(int));
+  bernoulliCDF(CDFdata, intData, nTrace);
+
+  fprintf(OUT, "Generating CDF:\n");
+  free(intData);
+#endif
+
   setData(CDFdata, nTrace);
   fprintf(OUT, "done.\n");
-  free(traceData);
 
   /* If data file is not stdin, close file. */
   if(strcmp(dataFn, "-")!=0) fclose(data_fp);
