@@ -124,12 +124,12 @@ static void (*output)(FILE *fp, int iteration,
 
 
 /* "Name" for iterations column*/
-static const char *itheader="Iterations\t";
+static const char *itheader="Iterations";
 
 /*Output titles and initial values*/
 void generalPrintTitles(FILE *p_fp, const parameters *p, int nP) {
   if(p_fp) { 
-    fprintf(p_fp, "%s", itheader),printParameterNames(p_fp, p, nP);
+    fprintf(p_fp, "%s\t", itheader),printParameterNames(p_fp, p, nP);
   }
 }
 
@@ -327,16 +327,16 @@ void iterateDiff(FILE *p_fp, FILE *ip_fp, FILE *like_fp,
     /* printParameterNames(OUT, p, nP0); */
     /* fprintf(OUT, "%s\n",p->names[0]); */
     /* exit(1); */
-    fprintf(p_fp, "%s",itheader),printParameterNames(p_fp, p, nP0);
+    fprintf(p_fp, "%s\t",itheader),printParameterNames(p_fp, p, nP0);
     fprintf(p_fp,"%i\t",i),printParameters(p_fp, p, nP0);
     fflush(p_fp);
   }
   if(ip_fp){
-    fprintf(ip_fp, "%s", itheader), printIntParameterNames(ip_fp, ip, nIP0);
+    fprintf(ip_fp, "%s\t", itheader), printIntParameterNames(ip_fp, ip, nIP0);
     fprintf(ip_fp,"%i\t",i),printIntParameters(ip_fp, ip, nIP0);
     fflush(ip_fp);
   }
-  if (like_fp) { fprintf(like_fp, "%s", itheader),
+  if (like_fp) { fprintf(like_fp, "%s\t", itheader),
       fprintf(like_fp, "diffPrior\tdiffPosterior\tdiffTotal\n");
     fflush(like_fp);
   }
@@ -400,11 +400,11 @@ void iterateDoubleDiff(FILE *p_fp, FILE *like_fp,
 
   /*Output titles and initial values*/
   if(p_fp) { 
-    fprintf(p_fp, "%s", itheader),printParameterNames(p_fp, p0, nP0);
+    fprintf(p_fp, "%s\t", itheader),printParameterNames(p_fp, p0, nP0);
     fprintf(p_fp,"%i\t",i),printParameters(p_fp, p0, nP0);
     fflush(p_fp);
   }
-  if (like_fp) { fprintf(like_fp, "%s", itheader),
+  if (like_fp) { fprintf(like_fp, "%s\t", itheader),
       fprintf(like_fp, "diffPrior\tdiffPosterior\tdiffTotal\n");
     fflush(like_fp);
   }
@@ -455,7 +455,7 @@ void iterateDouble(FILE *p_fp, FILE *like_fp,
   printTitles(p_fp, p0, nP0);
   output(p_fp,i,p0, nP0), fflush(p_fp);
 
-  if (like_fp) { fprintf(like_fp, "%s", itheader),
+  if (like_fp) { fprintf(like_fp, "%s\t", itheader),
       fprintf(like_fp, LTITLES);
     fflush(like_fp);
   }
@@ -518,7 +518,6 @@ void iterateDoubleTwalk(FILE *p_fp, FILE *like_fp,
 			parameters *p1, int nP1,
 			parameters *p2, int nP2,
 			int seed, int nIter) {
-  static const char *itheader="Iterations\t";
   gsl_rng *r=gsl_rng_alloc(gsl_rng_taus);
   likelihood *L=allocLikelihood();
 
@@ -529,11 +528,11 @@ void iterateDoubleTwalk(FILE *p_fp, FILE *like_fp,
 
   /*Output titles and initial values*/
   if(p_fp) { 
-    fprintf(p_fp, "%s", itheader),printParameterNames(p_fp, p1, nP1);
+    fprintf(p_fp, "%s\t", itheader),printParameterNames(p_fp, p1, nP1);
     fprintf(p_fp,"%i\t",i),printParameters(p_fp, p1, nP1);
     fflush(p_fp);
   }
-  if (like_fp) { fprintf(like_fp, "%s", itheader),
+  if (like_fp) { fprintf(like_fp, "%s\t", itheader),
       fprintf(like_fp, LTITLES);
     fflush(like_fp);
   }
@@ -599,7 +598,6 @@ void iterate(FILE *p_fp, FILE *ip_fp, FILE *like_fp,
 		 const parameters *p0, int nP0,
 		 const intparameters *ip0, int nIP0,
 		 int seed, int nIter) {
-  static const char *itheader="Iterations\t";
   parameters *p=NULL;
   intparameters *ip=NULL;
   gsl_rng *r=gsl_rng_alloc(gsl_rng_taus);
@@ -633,16 +631,16 @@ void iterate(FILE *p_fp, FILE *ip_fp, FILE *like_fp,
     /* printParameterNames(OUT, p, nP0); */
     /* fprintf(OUT, "%s\n",p->names[0]); */
     /* exit(1); */
-    fprintf(p_fp, "%s",itheader),printParameterNames(p_fp, p, nP0);
+    fprintf(p_fp, "%s\t",itheader),printParameterNames(p_fp, p, nP0);
     fprintf(p_fp,"%i\t",i),printParameters(p_fp, p, nP0);
     fflush(p_fp);
   }
   if(ip_fp){
-    fprintf(ip_fp, "%s", itheader), printIntParameterNames(ip_fp, ip, nIP0);
+    fprintf(ip_fp, "%s\t", itheader), printIntParameterNames(ip_fp, ip, nIP0);
     fprintf(ip_fp,"%i\t",i),printIntParameters(ip_fp, ip, nIP0);
     fflush(ip_fp);
   }
-  if (like_fp) { fprintf(like_fp, "%s", itheader),
+  if (like_fp) { fprintf(like_fp, "%s\t", itheader),
       fprintf(like_fp, LTITLES);
     fflush(like_fp);
   }
@@ -702,7 +700,6 @@ void iterateRJ(char *k_prefix,
 	       const parameters *p0, int actP0, int minP, int nP0,
 	       const intparameters *ip0, int actIP0, int minIP, int nIP0,
 	       int seed, int nIter) {
-  static const char *itheader="Iterations\t";
   parameters *p=NULL;
   intparameters *ip=NULL;
   gsl_rng *r=gsl_rng_alloc(gsl_rng_taus);
@@ -770,7 +767,7 @@ void iterateRJ(char *k_prefix,
       sprintf(pfn,pFmt,p_prefix,k);
       /* fprintf(OUT, "%s\n", pfn); */
       p_fp=fopen(pfn, "w");
-      fprintf(p_fp, "%s",itheader),printParameterNames(p_fp, p, k);
+      fprintf(p_fp, "%s\t",itheader),printParameterNames(p_fp, p, k);
       fflush(p_fp);
       fclose(p_fp);
     }
@@ -785,13 +782,13 @@ void iterateRJ(char *k_prefix,
       sprintf(ipfn,ipFmt,ip_prefix,k);
       /* fprintf(OUT, "%s\n", ipfn); */
       ip_fp=fopen(ipfn, "w");
-      fprintf(ip_fp, "%s", itheader), printIntParameterNames(ip_fp, ip, k);
+      fprintf(ip_fp, "%s\t", itheader), printIntParameterNames(ip_fp, ip, k);
       fflush(ip_fp), fclose(ip_fp);
     }
     /* fprintf(ip_fp,"%i\t",i),printIntParameters(ip_fp, ip, actIP); */
   }
   if (like_fp) {
-    fprintf(like_fp, "%s", itheader),fprintf(like_fp, LTITLES);
+    fprintf(like_fp, "%s\t", itheader),fprintf(like_fp, LTITLES);
     fflush(like_fp);
   }
 
