@@ -17,6 +17,10 @@
 
 #include <stdio.h>
 #include <string.h>
+
+/* For command line parameters */
+#include <unistd.h>
+
 #include <gsl/gsl_randist.h>
 
 #include "bernoulliDist.h"
@@ -230,6 +234,15 @@ void initialise() {
   
 }
 
+static double (* prior)(const parameters *p, 
+			int actP, int propP, int nP, 
+			const intparameters *ip, 
+			int actIP, int propIP, int nIP, 
+			likelihood *L) = dPriorChangepoints;
+
+static const char *prior_nJ_names[] = {"Poisson", "geometric"};
+
+static const char *prior_Loc_names[] = {"Order statistics", "negative binomial (k=1)", "negative binomial (k=2)"};
 
 /* Process command line parameters:
  argv[1]: Name of data file or '-' for stdin
@@ -248,36 +261,106 @@ void getArgs(int argc, char **argv) {
   const char* usage="icmcstat FILE ITERATIONS SEED [OUTPUTPREFIX] [K0FILE] [P0FILE]";
   double alpha=1, beta=1;
 
-  if( (argc<nArgs)|| (argc>nArgs+nOpt)) fprintf(ERR, "%s\n", usage), exit(1);
-  dataFn=argv[1];  
+  int opt;
+
+  int prior_nJ=0;  /* 0: Poisson, 1: geometric */
+  int prior_Loc=0; /* 0: order statistic, 1: negative binomial (k=1), 2: negative binomal (k=2) */
+  
+  while( (opt=getopt(argc, argv, "gpq")) != -1 ){
+      switch(opt) {
+      case 'g': 
+	prior_nJ=1;
+	break;
+      
+      case 'p': 
+	if(!prior_Loc) prior_Loc=1;
+	else fprintf(ERR, "ERROR: Only either of the options -p or -q option can be used\n"), exit(1);
+	break;
+      
+      case 'q': 
+	if(!prior_Loc) prior_Loc=2;
+	else fprintf(ERR, "ERROR: Only either of the options -p or -q option can be used\n"), exit(1);
+	break;
+      
+	//default: fprintf(ERR, "ERROR: Unknown options\n"), exit(1);
+      }
+  }
+
+  fprintf(ERR, "Priors selected:\n");
+  switch(prior_nJ) {
+  case 0: {
+    switch(prior_Loc) {
+    case 0: {
+      prior=dPriorChangepoints;
+      break;
+    }
+    case 1: {
+      prior=dPriorChangepointsNegativeBinK1;
+      break;
+    }
+    case 2: {
+      prior=dPriorChangepointsNegativeBinK2;
+      break;
+    }
+    }
+    break;
+  }
+  case 1: {
+    switch(prior_Loc) {
+    case 0: {
+      prior=dPriorChangepointsGeo;
+      break;
+    }
+    case 1: {
+      prior=dPriorChangepoints_nJGeoNegativeBinK1;
+      break;
+    }
+    case 2: {
+      prior=dPriorChangepoints_nJGeoNegativeBinK2;
+      break;
+    }
+    }
+    break; 
+  }
+  }
+
+  fprintf(ERR, "Number of changepoints: %s, Changepoint locations: %s\n",
+	  prior_nJ_names[prior_nJ], prior_Loc_names[prior_Loc]);
+
+  fprintf(ERR, "optind=%d, argc=%d\n", optind,argc); 
+  
+  if( (argc<optind+nArgs-1)|| (argc>optind+nArgs+nOpt-1)) fprintf(ERR, "%s\n", usage), exit(1);
+  dataFn=argv[optind];  
   printf("Reading data from ");
 
   if(!strcmp(dataFn, "-")) printf("stdin\n");
   else printf("%s\n", dataFn);
 
-  printf("%s iterations\n", argv[2]);
-  nIter = strtol(argv[2], &endptr, 10);
+  printf("%s iterations\n", argv[optind+1]);
+  nIter = strtol(argv[optind+1], &endptr, 10);
 
-  seed = strtol(argv[3], &endptr, 10);
+  seed = strtol(argv[optind+2], &endptr, 10);
   printf("Seed for random number generator: %i\n", seed);
 
   /* Optional parameters:*/
   /* Prefix */
   if(argc>=nArgs+1) {
-    prefix=argv[4];
+    prefix=argv[optind+3];
     printf("Prefix prepended to output files: %s\n", prefix); 
   }
 
   /* Restart */
-  if(argc==nArgs+nOpt) {
+  if(argc==optind+nArgs+nOpt-1) {
     restart=1;
-    re_K=argv[5];
-    re_P=argv[6];
+    re_K=argv[optind+4];
+    re_P=argv[optind+5];
     printf("Restarting with parameters from:\n\t%s\n\t%s\n", re_K, re_P);
   }
 
   fprintf(ERR, "Setting alpha=%g, beta=%g\n", alpha, beta);
   setAlpha(alpha); setBeta(beta);
+
+  fprintf(ERR, "Done.\n");
 }
 
 /* Process command line parameters:
@@ -411,12 +494,11 @@ int main(int argc, char **argv) {
   iterate(pfp, kfp, Lfp, /* dPriorNew */dPriorFixedChangepoints, dFixedLikelihood,p0,nProb, ip0, nK, seed, nIter);
 #endif
 
-#ifdef DEFAULT
-    if(!restart) {
+  if(!restart) {
 
     iterateRJ(prefix, prefix, prefix, prefix,
 	      sampleBirthDeath,
-	      dPriorChangepoints,dLikelihood,
+	      /* dPriorChangepoints */prior,dLikelihood,
 	      p0, nK0+1,1, nProb,
 	      ip0, nK0,1, nK, seed,  nIter);
   }
@@ -464,49 +546,10 @@ int main(int argc, char **argv) {
 
   iterateRJ(prefix, prefix, prefix, prefix,
 	    sampleBirthDeath,
-	    dPriorChangepoints,dLikelihood,
+	    /* dPriorChangepoints */prior,dLikelihood,
 	    p0, nReP-1,1, nProb,
 	    ip0, nReK-1,1, nK, seed,  nIter);
   }
-#endif
-
-#ifdef GEO
-  iterateRJ(prefix, prefix, prefix, prefix,
-	    sampleBirthDeath,
-	    dPriorChangepointsGeo,dLikelihood,
-	    p0, nK0+1,1, nProb,
-	    ip0, nK0,1, nK, seed,  nIter);
-#endif
-
-#ifdef NEGATIVEBINK1
-  iterateRJ(prefix, prefix, prefix, prefix,
-	    sampleBirthDeath,
-	    dPriorChangepointsNegativeBinK1,dLikelihood,
-	    p0, nK0+1,1, nProb,
-	    ip0, nK0,1, nK, seed,  nIter);
-#endif
-#ifdef NEGATIVEBINK2
-  iterateRJ(prefix, prefix, prefix, prefix,
-	    sampleBirthDeath,
-	    dPriorChangepointsNegativeBinK2,dLikelihood,
-	    p0, nK0+1,1, nProb,
-	    ip0, nK0,1, nK, seed,  nIter);
-#endif
-#ifdef NJGEONEGATIVEBINK1
-  iterateRJ(prefix, prefix, prefix, prefix,
-	    sampleBirthDeath,
-	    dPriorChangepoints_nJGeoNegativeBinK1,dLikelihood,
-	    p0, nK0+1,1, nProb,
-	    ip0, nK0,1, nK, seed,  nIter);
-#endif
-#ifdef NJGEONEGATIVEBINK2
-  iterateRJ(prefix, prefix, prefix, prefix,
-	    sampleBirthDeath,
-	    dPriorChangepoints_nJGeoNegativeBinK2,dLikelihood,
-	    p0, nK0+1,1, nProb,
-	    ip0, nK0,1, nK, seed,  nIter);
-#endif
-
   return 0;  
 }
  

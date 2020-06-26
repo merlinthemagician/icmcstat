@@ -750,7 +750,7 @@ void iterateRJ(char *k_prefix,
   /* Titles and initial values for actP and actIP */
   if(k_fp) {
     fprintf(k_fp, "%s",itheader);
-    if(p) fprintf(k_fp, "\t%s", "\"n_K (d)\"");
+    if(p) fprintf(k_fp, "%s", "\"n_K (d)\"");
     if(ip) fprintf(k_fp, "\t%s", "\"n_K\"");
     fprintf(k_fp, "\n");
     fprintf(k_fp, "%i", 0);

@@ -245,8 +245,6 @@ void initialiseParameters(parameters *p,
     setWidth(p, i, width);
     setMin(p, i, min);
     setMax(p, i, max);
-    /* free string because setParameterName copies anyway*/
-    free(name);
   }
 }
 
