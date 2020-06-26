@@ -18,8 +18,14 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifndef WINDOWS
 /* For command line parameters */
 #include <unistd.h>
+#endif
+
+#ifdef WINDOWS
+#include "getopt.h"
+#endif
 
 #include <gsl/gsl_randist.h>
 
